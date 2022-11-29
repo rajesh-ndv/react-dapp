@@ -3,6 +3,8 @@ import Identicon from 'identicon.js';
 import FileViewer from 'react-file-viewer';
 
 
+
+
 class Main extends Component {
 
   render() {
@@ -16,7 +18,7 @@ class Main extends Component {
               <form onSubmit={(event) => {
                 event.preventDefault()
                 const description = this.imageDescription.value
-                this.props.uploadImage(description)
+                this.props.uploadBlog(description)
               }} >
                 <input type='file' accept=".jpg, .jpeg, .png, .bmp, .gif, .pdf, .xlsx" onChange={this.props.captureFile} />
                   <div className="form-group mr-sm-2">
@@ -33,7 +35,7 @@ class Main extends Component {
                 <button type="submit" class="btn btn-primary btn-block btn-lg">Post!</button>
               </form>
               <p>&nbsp;</p>
-              { this.props.images.map((image, key) => {
+              { this.props.blogs.map((image, key) => {
                 return(
                   <div className="card mb-4" key={key} >
                     <div className="card-header">
@@ -59,32 +61,16 @@ class Main extends Component {
                         <button className="btn btn-link btn-sm float-left pt-0"
                           name={image.id}
                           onClick={(event) => {
-                            this.props.tipImageOwner(event.target.name);
+                            this.props.likeBlog(event.target.name);
                           }}>
                           Like: {image.likesCount.toString()} 
                         </button>
                         <button
                           className="btn btn-link btn-sm float-right pt-0"
                           name={image.id}
-                          onClick={(event) => {
-                          console.log(image);  
-                          // if(image.comments==null){
-                          //   image.comments = [];
-                          // }
-                           image.comments.map((comment,key)=>{
-                            return(
-                              <div>
-                                <ul id = "commentsList" className="list-group list-group-flush">
-                                <li className="list-group-item">
-                                  <p class="text-center">
-                                    {comment.author}
-                                  </p>
-                                  <p>{comment.content}</p>
-                                </li>
-                                </ul>
-                              </div>
-                            )
-                           })
+                          onClick={async (event) => {
+                          var result = await this.props.loadComments(image.id) ;
+                          console.log(result);
                           }}
                         >
                           Comments

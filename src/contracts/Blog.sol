@@ -65,13 +65,13 @@ contract Blog {
   function commentBlog(uint _id,string memory _comment) public {
     require(_id > 0 && _id <= blogCount);
     require(bytes(_comment).length > 0);
-    //Comment[] storage _commentArray = comments[_id];
-    // uint len = _commentArray.length;
-    // _commentArray[len] = Comment(msg.sender,_comment);
-    // comments[_id] = _commentArray;
     comments[_id].push(Comment(msg.sender,_comment));
-    //comments[_id] = _commentArray;
     emit BlogCommented(_id, comments[_id]);
+  }
+
+  function retrieveComments(uint _id) public view returns (Comment[] memory){
+    require(_id > 0 && _id <= blogCount);
+    return comments[_id];
   }
 
   function check(uint _id,address senderAddress) internal view returns(bool){

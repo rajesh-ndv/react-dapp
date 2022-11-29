@@ -39,7 +39,7 @@ class App extends Component {
       window.web3 = new Web3(window.web3.currentProvider)
     }
     else {
-      window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+      window.alert('No metamask browser')
     }
   }
 
@@ -114,6 +114,13 @@ class App extends Component {
     })
   }
 
+  loadComments= async (id) => {
+    console.log("Retrieving comments ");
+    var comments = await this.state.blog.methods.retrieveComments(id).call();
+    console.log(comments);
+    return comments;
+  }
+
   likeBlog(id) {
     this.setState({ loading: true })
     this.state.blog.methods.likeBlog(id).send({ from: this.state.account }).on('transactionHash', (hash) => {
@@ -130,10 +137,11 @@ class App extends Component {
       loading: true
     }
 
-    this.uploadImage = this.uploadBlog.bind(this)
-    this.likeBlog = this.likeBlog.bind(this)
-    this.captureFile = this.captureFile.bind(this)
+    this.uploadImage = this.uploadBlog.bind(this);
+    this.likeBlog = this.likeBlog.bind(this);
+    this.captureFile = this.captureFile.bind(this);
     this.addComment = this.addComment.bind(this);
+    this.loadComments = this.loadComments.bind(this);
 
   }
 
@@ -144,11 +152,12 @@ class App extends Component {
         { this.state.loading
           ? <div id="loader" className="text-center mt-5"><p>Loading...</p></div>
           : <Main
-              images={this.state.blogs}
+              blogs={this.state.blogs}
               captureFile={this.captureFile}
-              uploadImage={this.uploadBlog}
-              tipImageOwner={this.likeBlog}
+              uploadBlog={this.uploadBlog}
+              likeBlog={this.likeBlog}
               commentBlog={this.addComment}
+              loadComments={this.loadComments}
             />
         }
       </div>
