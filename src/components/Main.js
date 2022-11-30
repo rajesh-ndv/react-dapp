@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Identicon from 'identicon.js';
 import FileViewer from 'react-file-viewer';
+import ListItem from './ListItems';
 
 
 
@@ -36,6 +37,7 @@ class Main extends Component {
               </form>
               <p>&nbsp;</p>
               { this.props.blogs.map((image, key) => {
+                console.log(image);
                 return(
                   <div className="card mb-4" key={key} >
                     <div className="card-header">
@@ -51,6 +53,7 @@ class Main extends Component {
                       <li className="list-group-item">
                         <p class="text-center">
                         <FileViewer
+                            id = {image.hash}
                             fileType={image.fileType}
                             filePath={`https://blchain-rjv.infura-ipfs.io/ipfs/${image.hash}`}
                           />
@@ -69,8 +72,6 @@ class Main extends Component {
                           className="btn btn-link btn-sm float-right pt-0"
                           name={image.id}
                           onClick={async (event) => {
-                          var result = await this.props.loadComments(image.id) ;
-                          console.log(result);
                           }}
                         >
                           Comments
@@ -94,7 +95,12 @@ class Main extends Component {
                         >
                           comment!
                         </button>
+                        <div className="form-group mr-sm-2">
+                        <br></br>
+                          <ListItem comments = {image.comments}/>
+                        </div>
                       </li>
+                      
                     </ul>
                   </div>
                 )

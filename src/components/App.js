@@ -5,6 +5,9 @@ import './App.css';
 import Blog from '../abis/Blog.json';
 import Navbar from './Navbar'
 import Main from './Main';
+import Analytics from './Analytics';
+// import ReactDOM from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 
 
@@ -51,25 +54,44 @@ class App extends Component {
     console.log(networkId)
     if(networkId) {
       const blog = await web3.eth.Contract(Blog.abi,Blog.networks[networkId].address);
+      // const analytics = await web3.eth.Contract(Analytics.abi,Analytics.networks[networkId].address);
+      // await this.setSmartContractAddress(analytics,Blog.networks[networkId].address);
       console.log(blog);
       this.setState({ blog })
       const blogCount = await blog.methods.blogCount().call()
       this.setState({ blogCount })
       // Load images
       for (var i = 1; i <= blogCount; i++) {
-        const currentBlog = await blog.methods.blogs(i).call()
+        const currentBlog = await blog.methods.blogs(i).call();
+        const comments = await this.loadComments(currentBlog.id);
+        currentBlog.comments = comments;
         this.setState({
           blogs: [...this.state.blogs, currentBlog]
         })
+        if(!this.state.likes[currentBlog.author]){
+          this.state.likes[currentBlog.author] = 0;
+        }
+        this.state.likes[currentBlog.author]+=Number(currentBlog.likesCount);
       }
       this.setState({
         blogs: this.state.blogs.sort((a,b) => b.likesCount - a.likesCount )
       })
-      console.log(this.state.blogs);
+      for (var key of Object.keys(this.state.likes)) {
+       this.state.axes.push({label: key, y: this.state.likes[key]});
+      }
+      console.log(this.state.axes);
       this.setState({ loading: false})
     } else {
       window.alert('blog contract not deployed to detected network.')
     }
+  }
+
+  setSmartContractAddress = async (analytics,address)=>{
+    this.state.analytics = analytics;
+    analytics.methods.setAddress(address).send({ from: this.state.account }).on('transactionHash', async(hash) => {
+      const blogCountFromAsc = await this.state.analytics.methods.getBlogCount().call();
+      console.log(blogCountFromAsc);
+    })
   }
 
   captureFile = event => {
@@ -117,7 +139,6 @@ class App extends Component {
   loadComments= async (id) => {
     console.log("Retrieving comments ");
     var comments = await this.state.blog.methods.retrieveComments(id).call();
-    console.log(comments);
     return comments;
   }
 
@@ -134,7 +155,9 @@ class App extends Component {
       account: '',
       blog: null,
       blogs: [],
-      loading: true
+      loading: true,
+      likes: {},
+      axes: []
     }
 
     this.uploadImage = this.uploadBlog.bind(this);
@@ -148,8 +171,12 @@ class App extends Component {
   render() {
     return (
        <div>
+        <BrowserRouter>
         <Navbar account={this.state.account} />
-        { this.state.loading
+          <Routes>
+            <Route path="analytics" element={<Analytics axes = {this.state.axes}/>} />
+          </Routes>
+          { this.state.loading
           ? <div id="loader" className="text-center mt-5"><p>Loading...</p></div>
           : <Main
               blogs={this.state.blogs}
@@ -160,6 +187,7 @@ class App extends Component {
               loadComments={this.loadComments}
             />
         }
+        </BrowserRouter>
       </div>
     );
   }

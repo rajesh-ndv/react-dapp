@@ -10,6 +10,7 @@ contract Blog {
   mapping(uint => address[]) public likedUsers;
   mapping(uint => Comment[]) public comments;
 
+
   struct BlogItem {
     uint id;
     string hash;
@@ -24,32 +25,40 @@ contract Blog {
     string content;
   }
 
-  event BlogUpdated(
-    uint id,
-    string hash,
-    string description,
-    uint likesCount,
-    address payable author,
-    Comment[] comments,
-    string fileType
-  );
 
-  event BlogLiked(
-    uint id,
-    uint likesCount,
-    address payable author
-  );
+  // event BlogUpdated(
+  //   uint id,
+  //   string hash,
+  //   string description,
+  //   uint likesCount,
+  //   address payable author,
+  //   Comment[] comments,
+  //   string fileType
+  // );
 
-  event BlogCommented(
-    uint id,
-    Comment[] comments
-  );
+  // event BlogLiked(
+  //   uint id,
+  //   uint likesCount,
+  //   address payable author
+  // );
+
+  // event BlogCommented(
+  //   uint id,
+  //   Comment[] comments
+  // );
 
 
 
   constructor() public {
     name = "Blog";
   }
+
+  function getBlogCount() public view returns(uint) {
+
+    return blogCount;
+    
+  }
+
 
 
   function uploadBlog(string memory _fileHash, string memory _description,string memory _fileType) public {
@@ -59,14 +68,14 @@ contract Blog {
     require(bytes(_fileType).length > 0);
     blogCount ++;
     blogs[blogCount] = BlogItem(blogCount, _fileHash, _description, 0, msg.sender,_fileType);
-    emit BlogUpdated(blogCount, _fileHash, _description, 0, msg.sender,comments[blogCount],_fileType);
+    //emit BlogUpdated(blogCount, _fileHash, _description, 0, msg.sender,comments[blogCount],_fileType);
   }
 
   function commentBlog(uint _id,string memory _comment) public {
     require(_id > 0 && _id <= blogCount);
     require(bytes(_comment).length > 0);
     comments[_id].push(Comment(msg.sender,_comment));
-    emit BlogCommented(_id, comments[_id]);
+    //emit BlogCommented(_id, comments[_id]);
   }
 
   function retrieveComments(uint _id) public view returns (Comment[] memory){
@@ -92,7 +101,29 @@ contract Blog {
     _blog.likesCount = _blog.likesCount + 1;
     blogs[_id] = _blog;
     likedUsers[_id].push(msg.sender);
-    emit BlogLiked(blogCount,_blog.likesCount,msg.sender);
+    //emit BlogLiked(blogCount,_blog.likesCount,msg.sender);
   }
+
+
+}
+
+
+contract Analytics {
+
+    address blogContractAddress;
+
+    function setAddress(address _blogAddress) external{
+        blogContractAddress = _blogAddress;
+    }
+
+
+
+    function getBlogCount() public view returns(uint){
+
+      Blog blogContract = Blog(blogContractAddress);
+
+      return blogContract.getBlogCount();
+      
+    }
 
 }
